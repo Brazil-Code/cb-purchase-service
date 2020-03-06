@@ -18,7 +18,7 @@ import br.com.brazilcode.cb.libs.repository.UserRepository;
  * Classe de serviço para detalhes de usuário.
  *
  * @author Brazil Code - Gabriel Guarido
- * @since 6 de mar de 2020 08:38:19
+ * @since 6 de mar de 2020 12:19:21
  * @version 1.0
  */
 @Service
