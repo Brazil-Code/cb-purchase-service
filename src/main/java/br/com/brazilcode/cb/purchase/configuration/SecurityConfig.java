@@ -7,7 +7,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 
-import br.com.brazilcode.cb.purchase.filter.JWTAuthenticationFilter;
 import br.com.brazilcode.cb.purchase.filter.JWTAuthorizationFilter;
 import br.com.brazilcode.cb.purchase.service.CustomUserDetailService;
 
@@ -34,7 +33,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 				.anyRequest().authenticated()
 				.and()
 				// Filtrando outras requisições para checar se o JWT está adicionado ao header
-				.addFilter(new JWTAuthenticationFilter(authenticationManager()))
 				.addFilter(new JWTAuthorizationFilter(authenticationManager(), customUserDetailService));
 	}
 
