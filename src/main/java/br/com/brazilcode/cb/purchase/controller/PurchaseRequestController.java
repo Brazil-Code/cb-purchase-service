@@ -19,7 +19,7 @@ import br.com.brazilcode.cb.purchase.dto.PurchaseRequestDTO;
 import br.com.brazilcode.cb.purchase.exception.PurchaseRequestValidationException;
 import br.com.brazilcode.cb.purchase.service.PurchaseRequestService;
 
-import static br.com.brazilcode.cb.purchase.constants.ErrorConstants.*;
+import static br.com.brazilcode.cb.purchase.constants.ApiResponseConstants.*;
 
 /**
  * Classe responsável por expor as APIs para PurchaseRequest.
@@ -60,11 +60,11 @@ public class PurchaseRequestController implements Serializable {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		} catch (Exception e) {
 			LOGGER.error(method + e, e.getMessage());
-			return new ResponseEntity<>(INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<>(INTERNAL_SERVER_ERROR_RESPONSE, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 		LOGGER.debug(method + "END");
-		return new ResponseEntity<>(HttpStatus.CREATED);
+		return new ResponseEntity<>(CREATED_RESPONSE, HttpStatus.CREATED);
 	}
 
 }
