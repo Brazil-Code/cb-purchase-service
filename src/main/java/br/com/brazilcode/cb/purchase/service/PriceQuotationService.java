@@ -37,7 +37,7 @@ public class PriceQuotationService implements Serializable {
 	 *
 	 * @author Brazil Code - Gabriel Guarido
 	 * @param {@link PriceQuotation}
-	 * @return
+	 * @return lista com todas as {@link PriceQuotation}
 	 * @throws Exception
 	 */
 	public List<PriceQuotation> save(PurchaseRequestDTO purchaseRequestDTO) throws Exception {
