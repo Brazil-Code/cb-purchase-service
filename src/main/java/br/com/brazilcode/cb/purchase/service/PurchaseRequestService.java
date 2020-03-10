@@ -3,6 +3,7 @@ package br.com.brazilcode.cb.purchase.service;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import br.com.brazilcode.cb.libs.enumerator.PurchaseRequestStatusEnum;
+import br.com.brazilcode.cb.libs.exception.ResourceNotFoundException;
 import br.com.brazilcode.cb.libs.model.PriceQuotation;
 import br.com.brazilcode.cb.libs.model.PurchaseRequest;
 import br.com.brazilcode.cb.libs.repository.PurchaseRequestRepository;
@@ -42,7 +44,7 @@ public class PurchaseRequestService implements Serializable {
 	private PriceQuotationService priceQuotationService;
 
 	/**
-	 * Método responsável por salvar um {@link PurchaseRequest} no banco de dados.
+	 * Método responsável por salvar um {@link PurchaseRequest} no banco de dados aplicando as regras de negócio.
 	 *
 	 * @author Brazil Code - Gabriel Guarido
 	 * @param {@link PurchaseRequestDTO}
@@ -62,7 +64,7 @@ public class PurchaseRequestService implements Serializable {
 			LOGGER.debug(method + "Converting: " + purchaseRequestDTO.toString() + " to entity");
 			PurchaseRequest purchaseRequest = this.convertDtoToEntity(purchaseRequestDTO);
 
-			LOGGER.debug(method + "Adding all the price quotations in the PurchaseRequest list");
+			LOGGER.debug(method + "Adding all the price quotations in the PurchaseRequest's list");
 			purchaseRequest.getPriceQuotations().addAll(priceQuotations);
 
 			LOGGER.debug(method + "Saving: " + purchaseRequest.toString());
@@ -79,7 +81,8 @@ public class PurchaseRequestService implements Serializable {
 	 * Método responsável por validar os campos obrigatórios para {@link PurchaseRequest}.
 	 *
 	 * @author Brazil Code - Gabriel Guarido
-	 * @param {@link PurchaseRequestDTO}
+	 * @param purchaseRequestDTO
+	 * @throws PurchaseRequestValidationException
 	 */
 	public void validateMandatoryFields(PurchaseRequestDTO purchaseRequestDTO) throws PurchaseRequestValidationException {
 		String method = "[ PurchaseRequestService.validateMandatoryFields ] - ";
@@ -135,11 +138,11 @@ public class PurchaseRequestService implements Serializable {
 	}
 
 	/**
-	 * Método responsável por converter um objeto {@link PurchaseRequestDTO} para entidade PurchaseRequest.
+	 * Método responsável por converter um objeto {@link PurchaseRequestDTO} para entidade {@link PurchaseRequest}.
 	 *
 	 * @author Brazil Code - Gabriel Guarido
 	 * @param {@link PurchaseRequestDTO}
-	 * @return
+	 * @return {@link PurchaseRequestDTO} com os atributos preenchidos com os dados do objeto DTO
 	 */
 	public PurchaseRequest convertDtoToEntity(PurchaseRequestDTO purchaseRequestDTO) {
 		String method = "[ PurchaseRequestService.convertDtoToEntity ] - ";
@@ -159,6 +162,21 @@ public class PurchaseRequestService implements Serializable {
 
 		LOGGER.debug(method + "END... Returning: " + purchaseRequest.toString());
 		return purchaseRequest;
+	}
+
+	/**
+	 * Método responsável por verificar se a {@link PurchaseRequest} existe pelo ID informado.
+	 *
+	 * @author Brazil Code - Gabriel Guarido
+	 * @param id
+	 * @return {@link PurchaseRequest} caso o ID seja encontrado na base de dados
+	 */
+	public PurchaseRequest verifyIfExists(Long id) {
+		final Optional<PurchaseRequest> purchaseRequest = purchaseRequestDAO.findById(id);
+		if (!purchaseRequest.isPresent())
+			throw new ResourceNotFoundException("Purchase Request not found for the given ID: " + id);
+
+		return purchaseRequest.get();
 	}
 
 }
