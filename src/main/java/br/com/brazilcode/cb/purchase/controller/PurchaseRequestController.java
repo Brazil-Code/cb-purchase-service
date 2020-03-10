@@ -10,11 +10,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.com.brazilcode.cb.libs.model.PurchaseRequest;
 import br.com.brazilcode.cb.purchase.dto.PurchaseRequestDTO;
 import br.com.brazilcode.cb.purchase.exception.PurchaseRequestValidationException;
 import br.com.brazilcode.cb.purchase.service.PurchaseRequestService;
@@ -38,6 +41,19 @@ public class PurchaseRequestController implements Serializable {
 
 	@Autowired
 	private PurchaseRequestService purchaseRequestService;
+
+	/**
+	 * Método responsável por buscar uma {@link PurchaseRequest}.
+	 *
+	 * @author Brazil Code - Gabriel Guarido
+	 * @param id
+	 * @return
+	 */
+	@GetMapping(path = "{id}")
+	public ResponseEntity<?> findById(@PathVariable("id") final Long id) {
+		final PurchaseRequest purchaseRequest = purchaseRequestService.verifyIfExists(id);
+		return new ResponseEntity<>(purchaseRequest, HttpStatus.OK);
+	}
 
 	/**
 	 * Método responsável por gravar uma {@link PurchaseRequest}. Rollback em caso de exceção
