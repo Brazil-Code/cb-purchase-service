@@ -73,7 +73,7 @@ public class PurchaseRequestController implements Serializable {
 			this.purchaseRequestService.save(purchaseRequestDTO);
 		} catch (PurchaseRequestValidationException e) {
 			LOGGER.error(method + e.getMessage(), e);
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(VALIDATION_ERROR_RESPONSE + e.getMessage(), HttpStatus.BAD_REQUEST);
 		} catch (Exception e) {
 			LOGGER.error(method + e.getMessage(), e);
 			return new ResponseEntity<>(INTERNAL_SERVER_ERROR_RESPONSE, HttpStatus.INTERNAL_SERVER_ERROR);
