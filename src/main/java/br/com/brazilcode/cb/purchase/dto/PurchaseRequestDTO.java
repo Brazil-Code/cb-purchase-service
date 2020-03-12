@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Classe de Data Transfer Object para PurchaseRequest.
+ * Classe de Data Transfer Object para {@link PurchaseRequest}.
  *
  * @author Brazil Code - Gabriel Guarido
  * @since 7 de mar de 2020 15:39:30

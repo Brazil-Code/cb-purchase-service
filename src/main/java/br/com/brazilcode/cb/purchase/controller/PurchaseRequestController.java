@@ -1,5 +1,7 @@
 package br.com.brazilcode.cb.purchase.controller;
 
+import static br.com.brazilcode.cb.libs.constants.ApiResponseConstants.*;
+
 import java.io.Serializable;
 
 import javax.validation.Valid;
@@ -21,8 +23,6 @@ import br.com.brazilcode.cb.libs.model.PurchaseRequest;
 import br.com.brazilcode.cb.purchase.dto.PurchaseRequestDTO;
 import br.com.brazilcode.cb.purchase.exception.PurchaseRequestValidationException;
 import br.com.brazilcode.cb.purchase.service.PurchaseRequestService;
-
-import static br.com.brazilcode.cb.purchase.constants.ApiResponseConstants.*;
 
 /**
  * Classe responsável por expor as APIs para PurchaseRequest.
@@ -72,10 +72,10 @@ public class PurchaseRequestController implements Serializable {
 			LOGGER.debug(method + "Calling PurchaseRequestService.save... sending: " + purchaseRequestDTO.toString());
 			this.purchaseRequestService.save(purchaseRequestDTO);
 		} catch (PurchaseRequestValidationException e) {
-			LOGGER.error(method + e, e.getMessage());
+			LOGGER.error(method + e.getMessage(), e);
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		} catch (Exception e) {
-			LOGGER.error(method + e, e.getMessage());
+			LOGGER.error(method + e.getMessage(), e);
 			return new ResponseEntity<>(INTERNAL_SERVER_ERROR_RESPONSE, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
