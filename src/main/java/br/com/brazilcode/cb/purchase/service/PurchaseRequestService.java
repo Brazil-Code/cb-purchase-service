@@ -81,8 +81,8 @@ public class PurchaseRequestService implements Serializable {
 	 * Método responsável por validar os campos obrigatórios para {@link PurchaseRequest}.
 	 *
 	 * @author Brazil Code - Gabriel Guarido
-	 * @param purchaseRequestDTO
-	 * @throws PurchaseRequestValidationException
+	 * @param {@link PurchaseRequestDTO}
+	 * @throws {@link PurchaseRequestValidationException}
 	 */
 	public void validateMandatoryFields(PurchaseRequestDTO purchaseRequestDTO) throws PurchaseRequestValidationException {
 		String method = "[ PurchaseRequestService.validateMandatoryFields ] - ";
@@ -142,7 +142,7 @@ public class PurchaseRequestService implements Serializable {
 	 *
 	 * @author Brazil Code - Gabriel Guarido
 	 * @param {@link PurchaseRequestDTO}
-	 * @return {@link PurchaseRequestDTO} com os atributos preenchidos com os dados do objeto DTO
+	 * @return {@link PurchaseRequest} com os atributos preenchidos com os dados do objeto DTO
 	 */
 	public PurchaseRequest convertDtoToEntity(PurchaseRequestDTO purchaseRequestDTO) {
 		String method = "[ PurchaseRequestService.convertDtoToEntity ] - ";
