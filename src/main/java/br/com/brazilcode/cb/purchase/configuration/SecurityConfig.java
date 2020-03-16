@@ -29,7 +29,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
 		http.csrf().disable().authorizeRequests()
-				.antMatchers("/").permitAll()
+				.antMatchers("/", "/swagger-ui.html", "/webjars/**").permitAll()
 				.anyRequest().authenticated()
 				.and()
 				// Filtrando outras requisições para checar se o JWT está adicionado ao header
