@@ -84,7 +84,8 @@ public class PurchaseRequestService implements Serializable {
 	 * @param {@link PurchaseRequestDTO}
 	 * @throws {@link PurchaseRequestValidationException}
 	 */
-	public void validateMandatoryFields(PurchaseRequestDTO purchaseRequestDTO) throws PurchaseRequestValidationException {
+	public void validateMandatoryFields(PurchaseRequestDTO purchaseRequestDTO)
+			throws PurchaseRequestValidationException, ResourceNotFoundException {
 		String method = "[ PurchaseRequestService.validateMandatoryFields ] - ";
 		LOGGER.debug(method + "BEGIN");
 
@@ -93,6 +94,14 @@ public class PurchaseRequestService implements Serializable {
 		if (purchaseRequestDTO != null) {
 			if (purchaseRequestDTO.getCreateUser() == null) {
 				warnings.append("\nField \'createUser\' cannot be null.");
+			} else {
+				try {
+					this.userService.verifyIfExists(purchaseRequestDTO.getCreateUser());
+				} catch (ResourceNotFoundException e) {
+					warnings.append("\n User: " + purchaseRequestDTO.getCreateUser() + " does not exist");
+					LOGGER.error(method + e.getMessage(), e);
+					throw e;
+				}
 			}
 
 			if (StringUtils.isBlank(purchaseRequestDTO.getObservation())) {
