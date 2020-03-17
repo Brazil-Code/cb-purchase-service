@@ -21,6 +21,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.brazilcode.cb.libs.exception.ResourceNotFoundException;
 import br.com.brazilcode.cb.libs.model.PurchaseRequest;
+import br.com.brazilcode.cb.libs.model.response.BadRequestResponseObject;
+import br.com.brazilcode.cb.libs.model.response.CreatedResponseObject;
+import br.com.brazilcode.cb.libs.model.response.InternalServerErrorResponseObject;
 import br.com.brazilcode.cb.purchase.dto.PurchaseRequestDTO;
 import br.com.brazilcode.cb.purchase.exception.PurchaseRequestValidationException;
 import br.com.brazilcode.cb.purchase.service.PurchaseRequestService;
@@ -66,25 +69,28 @@ public class PurchaseRequestController implements Serializable {
 	@PostMapping
 	@Transactional(rollbackFor = Exception.class)
 	public ResponseEntity<?> save(@Valid @RequestBody final PurchaseRequestDTO purchaseRequestDTO) {
-		String method = "[ PurchaseRequestController.save ] - ";
+		final String method = "[ PurchaseRequestController.save ] - ";
 		LOGGER.debug(method + "BEGIN");
 
 		try {
 			LOGGER.debug(method + "Calling PurchaseRequestService.save... sending: " + purchaseRequestDTO.toString());
-			this.purchaseRequestService.save(purchaseRequestDTO);
+			PurchaseRequest purchaseRequest = this.purchaseRequestService.save(purchaseRequestDTO);
+
+			return new ResponseEntity<>(new CreatedResponseObject(purchaseRequest.getId()), HttpStatus.CREATED);
 		} catch (PurchaseRequestValidationException e) {
-			LOGGER.error(method + e.getMessage(), e);
-			return new ResponseEntity<>(VALIDATION_ERROR_RESPONSE + e.getMessage(), HttpStatus.BAD_REQUEST);
+			final String errorMessage = VALIDATION_ERROR_RESPONSE + e.getMessage();
+			LOGGER.error(method + errorMessage, e);
+			return new ResponseEntity<>(new BadRequestResponseObject(errorMessage), HttpStatus.BAD_REQUEST);
 		} catch (ResourceNotFoundException e) {
-			LOGGER.error(method + e.getMessage(), e);
-			return new ResponseEntity<>(VALIDATION_ERROR_RESPONSE + e.getMessage(), HttpStatus.BAD_REQUEST);
+			final String errorMessage = VALIDATION_ERROR_RESPONSE + e.getMessage();
+			LOGGER.error(method + errorMessage, e);
+			return new ResponseEntity<>(new BadRequestResponseObject(errorMessage), HttpStatus.BAD_REQUEST);
 		} catch (Exception e) {
 			LOGGER.error(method + e.getMessage(), e);
-			return new ResponseEntity<>(INTERNAL_SERVER_ERROR_RESPONSE, HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<>(new InternalServerErrorResponseObject(), HttpStatus.INTERNAL_SERVER_ERROR);
+		} finally {
+			LOGGER.debug(method + "END");
 		}
-
-		LOGGER.debug(method + "END");
-		return new ResponseEntity<>(CREATED_RESPONSE, HttpStatus.CREATED);
 	}
 
 }

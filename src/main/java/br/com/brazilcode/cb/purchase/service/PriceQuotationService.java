@@ -41,7 +41,7 @@ public class PriceQuotationService implements Serializable {
 	 * @throws Exception
 	 */
 	public List<PriceQuotation> save(PurchaseRequestDTO purchaseRequestDTO) throws Exception {
-		String method = "[ PriceQuotationService.save ] - ";
+		final String method = "[ PriceQuotationService.save ] - ";
 		LOGGER.debug(method + "BEGIN");
 
 		List<PriceQuotationDTO> priceQuotationsDTO = purchaseRequestDTO.getPriceQuotations();
@@ -73,7 +73,7 @@ public class PriceQuotationService implements Serializable {
 	 * @return
 	 */
 	public PriceQuotation convertDtoToEntity(PriceQuotationDTO priceQuotationDTO) {
-		String method = "[ PriceQuotationService.convertDtoToEntity ] - ";
+		final String method = "[ PriceQuotationService.convertDtoToEntity ] - ";
 		LOGGER.debug(method + "BEGIN");
 
 		PriceQuotation priceQuotation = new PriceQuotation();
@@ -81,7 +81,7 @@ public class PriceQuotationService implements Serializable {
 			LOGGER.debug(method + "Loading PriceQuotation");
 			priceQuotation.setLink(priceQuotationDTO.getLink());
 			priceQuotation.setUnitValue(priceQuotationDTO.getUnitValue());
-			priceQuotation.setPurchaseItem(priceQuotationDTO.getPurchaseItem());
+			priceQuotation.setObservation(priceQuotationDTO.getObservation());
 			priceQuotation.setAmount(priceQuotationDTO.getAmount());
 			priceQuotation.setTotalValue(priceQuotationDTO.getTotalValue());
 		} catch (Exception e) {
