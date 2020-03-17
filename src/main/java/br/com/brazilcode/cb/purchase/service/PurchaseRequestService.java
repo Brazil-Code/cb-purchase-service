@@ -94,14 +94,6 @@ public class PurchaseRequestService implements Serializable {
 		if (purchaseRequestDTO != null) {
 			if (purchaseRequestDTO.getCreateUser() == null) {
 				warnings.append(", Field \'createUser\' cannot be null");
-			} else {
-				try {
-					this.userService.verifyIfExists(purchaseRequestDTO.getCreateUser());
-				} catch (ResourceNotFoundException e) {
-					warnings.append(", User: " + purchaseRequestDTO.getCreateUser() + " does not exist");
-					LOGGER.error(method + e.getMessage(), e);
-					throw e;
-				}
 			}
 
 			if (StringUtils.isBlank(purchaseRequestDTO.getPurchaseItem())) {
@@ -181,7 +173,7 @@ public class PurchaseRequestService implements Serializable {
 	public PurchaseRequest verifyIfExists(Long id) {
 		final Optional<PurchaseRequest> purchaseRequest = purchaseRequestDAO.findById(id);
 		if (!purchaseRequest.isPresent())
-			throw new ResourceNotFoundException("Purchase Request not found for the given ID: " + id);
+			throw new ResourceNotFoundException(", Purchase Request not found for the given ID: " + id);
 
 		return purchaseRequest.get();
 	}
