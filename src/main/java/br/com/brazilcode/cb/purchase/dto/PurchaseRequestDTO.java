@@ -13,7 +13,7 @@ import java.util.List;
 public class PurchaseRequestDTO {
 
 	private Long createUser;
-	private String observation;
+	private String purchaseItem;
 	private List<PriceQuotationDTO> priceQuotations = new ArrayList<>();
 
 	public Long getCreateUser() {
@@ -24,12 +24,12 @@ public class PurchaseRequestDTO {
 		this.createUser = createUser;
 	}
 
-	public String getObservation() {
-		return observation;
+	public String getPurchaseItem() {
+		return purchaseItem;
 	}
 
-	public void setObservation(String observation) {
-		this.observation = observation;
+	public void setPurchaseItem(String purchaseItem) {
+		this.purchaseItem = purchaseItem;
 	}
 
 	public List<PriceQuotationDTO> getPriceQuotations() {

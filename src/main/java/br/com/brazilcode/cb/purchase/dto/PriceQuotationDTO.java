@@ -5,13 +5,13 @@ package br.com.brazilcode.cb.purchase.dto;
  *
  * @author Brazil Code - Gabriel Guarido
  * @since 7 de mar de 2020 15:40:53
- * @version 1.0
+ * @version 1.1
  */
 public class PriceQuotationDTO {
 
 	private String link;
 	private double unitValue;
-	private String purchaseItem;
+	private String observation;
 	private int amount;
 	private double totalValue;
 
@@ -31,12 +31,12 @@ public class PriceQuotationDTO {
 		this.unitValue = unitValue;
 	}
 
-	public String getPurchaseItem() {
-		return purchaseItem;
+	public String getObservation() {
+		return observation;
 	}
 
-	public void setPurchaseItem(String purchaseItem) {
-		this.purchaseItem = purchaseItem;
+	public void setObservation(String observation) {
+		this.observation = observation;
 	}
 
 	public int getAmount() {
