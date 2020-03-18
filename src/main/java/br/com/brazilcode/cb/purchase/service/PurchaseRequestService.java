@@ -10,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import br.com.brazilcode.cb.libs.enumerator.PurchaseRequestStatusEnum;
 import br.com.brazilcode.cb.libs.exception.ResourceNotFoundException;
@@ -51,6 +53,7 @@ public class PurchaseRequestService implements Serializable {
 	 * @param {@link PurchaseRequestDTO}
 	 * @throws Exception
 	 */
+	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
 	public PurchaseRequest save(PurchaseRequestDTO purchaseRequestDTO) throws Exception {
 		final String method = "[ PurchaseRequestService.save ] - ";
 		LOGGER.debug(method + "BEGIN");
