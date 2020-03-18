@@ -1,6 +1,6 @@
 package br.com.brazilcode.cb.purchase.controller;
 
-import static br.com.brazilcode.cb.libs.constants.ApiResponseConstants.*;
+import static br.com.brazilcode.cb.libs.constants.ApiResponseConstants.VALIDATION_ERROR_RESPONSE;
 
 import java.io.Serializable;
 
@@ -18,12 +18,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestClientException;
 
 import br.com.brazilcode.cb.libs.exception.ResourceNotFoundException;
 import br.com.brazilcode.cb.libs.model.PurchaseRequest;
-import br.com.brazilcode.cb.libs.model.response.BadRequestResponseObject;
-import br.com.brazilcode.cb.libs.model.response.CreatedResponseObject;
-import br.com.brazilcode.cb.libs.model.response.InternalServerErrorResponseObject;
+import br.com.brazilcode.cb.libs.model.api.response.BadRequestResponseObject;
+import br.com.brazilcode.cb.libs.model.api.response.CreatedResponseObject;
+import br.com.brazilcode.cb.libs.model.api.response.InternalServerErrorResponseObject;
+import br.com.brazilcode.cb.libs.model.api.response.RestIntegrationErrorResponse;
 import br.com.brazilcode.cb.purchase.dto.PurchaseRequestDTO;
 import br.com.brazilcode.cb.purchase.exception.PurchaseRequestValidationException;
 import br.com.brazilcode.cb.purchase.service.PurchaseRequestService;
@@ -33,7 +35,7 @@ import br.com.brazilcode.cb.purchase.service.PurchaseRequestService;
  *
  * @author Brazil Code - Gabriel Guarido
  * @since 6 de mar de 2020 12:32:49
- * @version 1.0
+ * @version 1.1
  */
 @RestController
 @RequestMapping("purchase-request")
@@ -85,6 +87,9 @@ public class PurchaseRequestController implements Serializable {
 			final String errorMessage = VALIDATION_ERROR_RESPONSE + e.getMessage();
 			LOGGER.error(method + errorMessage, e);
 			return new ResponseEntity<>(new BadRequestResponseObject(errorMessage), HttpStatus.BAD_REQUEST);
+		} catch (RestClientException e) {
+			LOGGER.error(method + e.getMessage(), e);
+			return new ResponseEntity<>(new RestIntegrationErrorResponse(), HttpStatus.INTERNAL_SERVER_ERROR);
 		} catch (Exception e) {
 			LOGGER.error(method + e.getMessage(), e);
 			return new ResponseEntity<>(new InternalServerErrorResponseObject(), HttpStatus.INTERNAL_SERVER_ERROR);
