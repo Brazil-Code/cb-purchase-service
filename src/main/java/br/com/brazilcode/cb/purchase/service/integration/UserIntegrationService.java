@@ -6,6 +6,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -39,16 +43,24 @@ public class UserIntegrationService implements Serializable {
 	 * @throws RestClientException - Caso ocorra algum erro durante a comunicação com a API
 	 * @throws ResourceNotFoundException - Caso o ID informado não exista na base de dados
 	 */
-	public User verifyIfExists(Long id) throws RestClientException, ResourceNotFoundException {
+	public User verifyIfExists(Long id) {
 		final String method = "[ UserIntegrationService.verifyIfExist ] - ";
 		LOGGER.debug(method + "BEGIN");
 
+		RestTemplate restTemplate = new RestTemplate();
 		final String url = environment.getProperty("cb.administration.service.url") + "users/" + id;
-		final RestTemplate restTemplate = new RestTemplate();
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.set("Authorization",
+				"Bearer eyJhbGciOiJIUzUxMiJ9.eyJqdGkiOiJkMzI1ODRlMy0wZTAzLTRmMjgtOTgxYy0xZjA4N2ZjOGNlZGUiLCJzdWIiOiJnYWJyaWVsIiwidXNlcklkIjozLCJleHAiOjE1ODQ2NTc2OTl9.glNeRXSWKIr5JpZNWTpAHC3Hwya5oFajWawTA_0M-pqQJotgEYgDcmMzbwsS-clcFqrGY0OfRRYOeHzYDqEpVQ");
+
+		HttpEntity<User> request = new HttpEntity<>(null, headers);
 
 		try {
 			LOGGER.debug(method + "Calling the following URL: " + url);
-			return restTemplate.getForObject(url, User.class);
+			ResponseEntity<?> result = restTemplate.exchange(url, HttpMethod.GET, request, User.class);
+
+			return (User) result.getBody();
 		} catch (Exception e) {
 			LOGGER.error(method + e.getMessage(), e);
 			throw e;
