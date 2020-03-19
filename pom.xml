@@ -65,6 +65,12 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- Commons Lang 3 -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+		</dependency>
+
 		<!-- Model's Lib -->
 		<dependency>
 			<groupId>br.com.brazilcode.cb.libs</groupId>
