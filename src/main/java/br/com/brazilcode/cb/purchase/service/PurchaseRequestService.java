@@ -3,7 +3,6 @@ package br.com.brazilcode.cb.purchase.service;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -146,7 +145,7 @@ public class PurchaseRequestService implements Serializable {
 	 * @author Brazil Code - Gabriel Guarido
 	 * @param {@link PurchaseRequestDTO}
 	 * @return {@link PurchaseRequest} com os atributos preenchidos com os dados do objeto DTO
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	public PurchaseRequest convertDtoToEntity(PurchaseRequestDTO purchaseRequestDTO) throws Exception {
 		final String method = "[ PurchaseRequestService.convertDtoToEntity ] - ";
@@ -176,11 +175,10 @@ public class PurchaseRequestService implements Serializable {
 	 * @return {@link PurchaseRequest} caso o ID seja encontrado na base de dados
 	 */
 	public PurchaseRequest verifyIfExists(Long id) {
-		final Optional<PurchaseRequest> purchaseRequest = purchaseRequestDAO.findById(id);
-		if (!purchaseRequest.isPresent())
-			throw new ResourceNotFoundException(", Purchase Request not found for the given ID: " + id);
+		final PurchaseRequest purchaseRequest = purchaseRequestDAO.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException(", Purchase Request not found for the given ID: " + id));
 
-		return purchaseRequest.get();
+		return purchaseRequest;
 	}
 
 }
