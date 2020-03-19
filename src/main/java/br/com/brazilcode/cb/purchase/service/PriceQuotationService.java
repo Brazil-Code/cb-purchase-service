@@ -8,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import br.com.brazilcode.cb.libs.model.PriceQuotation;
 import br.com.brazilcode.cb.libs.repository.PriceQuotationRepository;
@@ -40,6 +42,7 @@ public class PriceQuotationService implements Serializable {
 	 * @return lista com todas as {@link PriceQuotation}
 	 * @throws Exception
 	 */
+	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
 	public List<PriceQuotation> save(PurchaseRequestDTO purchaseRequestDTO) throws Exception {
 		final String method = "[ PriceQuotationService.save ] - ";
 		LOGGER.debug(method + "BEGIN");

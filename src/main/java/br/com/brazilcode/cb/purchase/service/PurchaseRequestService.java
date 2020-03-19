@@ -10,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import br.com.brazilcode.cb.libs.enumerator.PurchaseRequestStatusEnum;
 import br.com.brazilcode.cb.libs.exception.ResourceNotFoundException;
@@ -19,13 +21,14 @@ import br.com.brazilcode.cb.libs.repository.PurchaseRequestRepository;
 import br.com.brazilcode.cb.purchase.dto.PriceQuotationDTO;
 import br.com.brazilcode.cb.purchase.dto.PurchaseRequestDTO;
 import br.com.brazilcode.cb.purchase.exception.PurchaseRequestValidationException;
+import br.com.brazilcode.cb.purchase.service.integration.UserIntegrationService;
 
 /**
  * Classe responsável por aplicar as regras de negócio para {@link PurchaseRequest}.
  *
  * @author Brazil Code - Gabriel Guarido
  * @since 6 de mar de 2020 15:59:04
- * @version 1.0
+ * @version 1.1
  */
 @Service
 public class PurchaseRequestService implements Serializable {
@@ -38,7 +41,7 @@ public class PurchaseRequestService implements Serializable {
 	private PurchaseRequestRepository purchaseRequestDAO;
 
 	@Autowired
-	private UserService userService;
+	private UserIntegrationService userIntegrationService;
 
 	@Autowired
 	private PriceQuotationService priceQuotationService;
@@ -50,6 +53,7 @@ public class PurchaseRequestService implements Serializable {
 	 * @param {@link PurchaseRequestDTO}
 	 * @throws Exception
 	 */
+	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
 	public PurchaseRequest save(PurchaseRequestDTO purchaseRequestDTO) throws Exception {
 		final String method = "[ PurchaseRequestService.save ] - ";
 		LOGGER.debug(method + "BEGIN");
@@ -142,15 +146,16 @@ public class PurchaseRequestService implements Serializable {
 	 * @author Brazil Code - Gabriel Guarido
 	 * @param {@link PurchaseRequestDTO}
 	 * @return {@link PurchaseRequest} com os atributos preenchidos com os dados do objeto DTO
+	 * @throws Exception 
 	 */
-	public PurchaseRequest convertDtoToEntity(PurchaseRequestDTO purchaseRequestDTO) {
+	public PurchaseRequest convertDtoToEntity(PurchaseRequestDTO purchaseRequestDTO) throws Exception {
 		final String method = "[ PurchaseRequestService.convertDtoToEntity ] - ";
 		LOGGER.debug(method + "BEGIN");
 
 		PurchaseRequest purchaseRequest = new PurchaseRequest();
 		try {
 			LOGGER.debug(method + "Loading PurchaseRequest");
-			purchaseRequest.setCreateUser(this.userService.verifyIfExists(purchaseRequestDTO.getCreateUser()));
+			purchaseRequest.setCreateUser(this.userIntegrationService.verifyIfExists(purchaseRequestDTO.getCreateUser()));
 			purchaseRequest.setPurchaseItem(purchaseRequestDTO.getPurchaseItem());
 			purchaseRequest.setStatus(PurchaseRequestStatusEnum.PENDING.getId());
 			purchaseRequest.setCreatedAt(new Timestamp(System.currentTimeMillis()));
