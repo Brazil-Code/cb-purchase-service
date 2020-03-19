@@ -55,12 +55,13 @@ public class UserIntegrationService implements Serializable {
 				"Bearer eyJhbGciOiJIUzUxMiJ9.eyJqdGkiOiJkMzI1ODRlMy0wZTAzLTRmMjgtOTgxYy0xZjA4N2ZjOGNlZGUiLCJzdWIiOiJnYWJyaWVsIiwidXNlcklkIjozLCJleHAiOjE1ODQ2NTc2OTl9.glNeRXSWKIr5JpZNWTpAHC3Hwya5oFajWawTA_0M-pqQJotgEYgDcmMzbwsS-clcFqrGY0OfRRYOeHzYDqEpVQ");
 
 		HttpEntity<User> request = new HttpEntity<>(null, headers);
+		ResponseEntity<?> response;
 
 		try {
 			LOGGER.debug(method + "Calling the following URL: " + url);
-			ResponseEntity<?> result = restTemplate.exchange(url, HttpMethod.GET, request, User.class);
+			response = restTemplate.exchange(url, HttpMethod.GET, request, User.class);
 
-			return (User) result.getBody();
+			return (User) response.getBody();
 		} catch (Exception e) {
 			LOGGER.error(method + e.getMessage(), e);
 			throw e;

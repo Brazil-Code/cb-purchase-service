@@ -11,13 +11,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 
 import br.com.brazilcode.cb.libs.exception.ResourceNotFoundException;
@@ -69,7 +69,6 @@ public class PurchaseRequestController implements Serializable {
 	 * @return
 	 */
 	@PostMapping
-	@Transactional(rollbackFor = Exception.class)
 	public ResponseEntity<?> save(@Valid @RequestBody final PurchaseRequestDTO purchaseRequestDTO) {
 		final String method = "[ PurchaseRequestController.save ] - ";
 		LOGGER.debug(method + "BEGIN");
@@ -84,6 +83,10 @@ public class PurchaseRequestController implements Serializable {
 			LOGGER.error(method + errorMessage, e);
 			return new ResponseEntity<>(new BadRequestResponseObject(errorMessage), HttpStatus.BAD_REQUEST);
 		} catch (ResourceNotFoundException e) {
+			final String errorMessage = VALIDATION_ERROR_RESPONSE + e.getMessage();
+			LOGGER.error(method + errorMessage, e);
+			return new ResponseEntity<>(new BadRequestResponseObject(errorMessage), HttpStatus.BAD_REQUEST);
+		} catch (HttpClientErrorException.NotFound e) {
 			final String errorMessage = VALIDATION_ERROR_RESPONSE + e.getMessage();
 			LOGGER.error(method + errorMessage, e);
 			return new ResponseEntity<>(new BadRequestResponseObject(errorMessage), HttpStatus.BAD_REQUEST);

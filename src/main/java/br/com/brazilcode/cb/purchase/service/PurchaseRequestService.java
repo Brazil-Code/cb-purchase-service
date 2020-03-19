@@ -146,8 +146,9 @@ public class PurchaseRequestService implements Serializable {
 	 * @author Brazil Code - Gabriel Guarido
 	 * @param {@link PurchaseRequestDTO}
 	 * @return {@link PurchaseRequest} com os atributos preenchidos com os dados do objeto DTO
+	 * @throws Exception 
 	 */
-	public PurchaseRequest convertDtoToEntity(PurchaseRequestDTO purchaseRequestDTO) {
+	public PurchaseRequest convertDtoToEntity(PurchaseRequestDTO purchaseRequestDTO) throws Exception {
 		final String method = "[ PurchaseRequestService.convertDtoToEntity ] - ";
 		LOGGER.debug(method + "BEGIN");
 
