@@ -20,7 +20,7 @@ import br.com.brazilcode.cb.libs.repository.PurchaseRequestRepository;
 import br.com.brazilcode.cb.purchase.dto.PriceQuotationDTO;
 import br.com.brazilcode.cb.purchase.dto.PurchaseRequestDTO;
 import br.com.brazilcode.cb.purchase.exception.PurchaseRequestValidationException;
-import br.com.brazilcode.cb.purchase.service.integration.UserIntegrationService;
+import br.com.brazilcode.cb.purchase.service.integration.administration.UserIntegrationService;
 
 /**
  * Classe responsável por aplicar as regras de negócio para {@link PurchaseRequest}.
