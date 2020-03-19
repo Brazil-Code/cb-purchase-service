@@ -28,7 +28,7 @@ import br.com.brazilcode.cb.purchase.service.integration.UserIntegrationService;
  *
  * @author Brazil Code - Gabriel Guarido
  * @since 6 de mar de 2020 15:59:04
- * @version 1.1
+ * @version 1.2
  */
 @Service
 public class PurchaseRequestService implements Serializable {
@@ -54,7 +54,7 @@ public class PurchaseRequestService implements Serializable {
 	 * @throws Exception
 	 */
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-	public PurchaseRequest save(PurchaseRequestDTO purchaseRequestDTO) throws Exception {
+	public PurchaseRequest save(String authorization, PurchaseRequestDTO purchaseRequestDTO) throws Exception {
 		final String method = "[ PurchaseRequestService.save ] - ";
 		LOGGER.debug(method + "BEGIN");
 
@@ -66,7 +66,7 @@ public class PurchaseRequestService implements Serializable {
 			List<PriceQuotation> priceQuotations = this.priceQuotationService.save(purchaseRequestDTO);
 
 			LOGGER.debug(method + "Converting: " + purchaseRequestDTO.toString() + " to entity");
-			PurchaseRequest purchaseRequest = this.convertDtoToEntity(purchaseRequestDTO);
+			PurchaseRequest purchaseRequest = this.convertDtoToEntity(authorization, purchaseRequestDTO);
 
 			LOGGER.debug(method + "Adding all the price quotations in the PurchaseRequest's list");
 			purchaseRequest.getPriceQuotations().addAll(priceQuotations);
@@ -148,14 +148,14 @@ public class PurchaseRequestService implements Serializable {
 	 * @return {@link PurchaseRequest} com os atributos preenchidos com os dados do objeto DTO
 	 * @throws Exception 
 	 */
-	public PurchaseRequest convertDtoToEntity(PurchaseRequestDTO purchaseRequestDTO) throws Exception {
+	public PurchaseRequest convertDtoToEntity(String authorization, PurchaseRequestDTO purchaseRequestDTO) throws Exception {
 		final String method = "[ PurchaseRequestService.convertDtoToEntity ] - ";
 		LOGGER.debug(method + "BEGIN");
 
 		PurchaseRequest purchaseRequest = new PurchaseRequest();
 		try {
 			LOGGER.debug(method + "Loading PurchaseRequest");
-			purchaseRequest.setCreateUser(this.userIntegrationService.verifyIfExists(purchaseRequestDTO.getCreateUser()));
+			purchaseRequest.setCreateUser(this.userIntegrationService.verifyIfExists(authorization, purchaseRequestDTO.getCreateUser()));
 			purchaseRequest.setPurchaseItem(purchaseRequestDTO.getPurchaseItem());
 			purchaseRequest.setStatus(PurchaseRequestStatusEnum.PENDING.getId());
 			purchaseRequest.setCreatedAt(new Timestamp(System.currentTimeMillis()));

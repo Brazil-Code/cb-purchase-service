@@ -4,6 +4,7 @@ import static br.com.brazilcode.cb.libs.constants.ApiResponseConstants.VALIDATIO
 
 import java.io.Serializable;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.slf4j.Logger;
@@ -35,7 +36,7 @@ import br.com.brazilcode.cb.purchase.service.PurchaseRequestService;
  *
  * @author Brazil Code - Gabriel Guarido
  * @since 6 de mar de 2020 12:32:49
- * @version 1.1
+ * @version 1.2
  */
 @RestController
 @RequestMapping("purchase-request")
@@ -69,13 +70,13 @@ public class PurchaseRequestController implements Serializable {
 	 * @return
 	 */
 	@PostMapping
-	public ResponseEntity<?> save(@Valid @RequestBody final PurchaseRequestDTO purchaseRequestDTO) {
+	public ResponseEntity<?> save(HttpServletRequest requestContext, @Valid @RequestBody final PurchaseRequestDTO purchaseRequestDTO) {
 		final String method = "[ PurchaseRequestController.save ] - ";
 		LOGGER.debug(method + "BEGIN");
 
 		try {
 			LOGGER.debug(method + "Calling PurchaseRequestService.save... sending: " + purchaseRequestDTO.toString());
-			PurchaseRequest purchaseRequest = this.purchaseRequestService.save(purchaseRequestDTO);
+			PurchaseRequest purchaseRequest = this.purchaseRequestService.save(requestContext.getHeader("Authorization"), purchaseRequestDTO);
 
 			return new ResponseEntity<>(new CreatedResponseObject(purchaseRequest.getId()), HttpStatus.CREATED);
 		} catch (PurchaseRequestValidationException e) {

@@ -22,7 +22,7 @@ import br.com.brazilcode.cb.libs.model.User;
  *
  * @author Brazil Code - Gabriel Guarido
  * @since 17 de mar de 2020 22:37:11
- * @version 1.0
+ * @version 1.1
  */
 @Service
 public class UserIntegrationService implements Serializable {
@@ -43,16 +43,16 @@ public class UserIntegrationService implements Serializable {
 	 * @throws RestClientException - Caso ocorra algum erro durante a comunicação com a API
 	 * @throws ResourceNotFoundException - Caso o ID informado não exista na base de dados
 	 */
-	public User verifyIfExists(Long id) {
+	public User verifyIfExists(String authorization, Long id) {
 		final String method = "[ UserIntegrationService.verifyIfExist ] - ";
 		LOGGER.debug(method + "BEGIN");
+		LOGGER.debug(method + "Authorization: " + authorization);
 
 		RestTemplate restTemplate = new RestTemplate();
 		final String url = environment.getProperty("cb.administration.service.url") + "users/" + id;
 
 		HttpHeaders headers = new HttpHeaders();
-		headers.set("Authorization",
-				"Bearer eyJhbGciOiJIUzUxMiJ9.eyJqdGkiOiJkMzI1ODRlMy0wZTAzLTRmMjgtOTgxYy0xZjA4N2ZjOGNlZGUiLCJzdWIiOiJnYWJyaWVsIiwidXNlcklkIjozLCJleHAiOjE1ODQ2NTc2OTl9.glNeRXSWKIr5JpZNWTpAHC3Hwya5oFajWawTA_0M-pqQJotgEYgDcmMzbwsS-clcFqrGY0OfRRYOeHzYDqEpVQ");
+		headers.set("Authorization", authorization);
 
 		HttpEntity<User> request = new HttpEntity<>(null, headers);
 		ResponseEntity<?> response;
