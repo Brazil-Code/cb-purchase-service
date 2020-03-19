@@ -57,8 +57,24 @@ public class PurchaseRequestController implements Serializable {
 	 */
 	@GetMapping(path = "{id}")
 	public ResponseEntity<?> findById(@PathVariable("id") final Long id) {
-		final PurchaseRequest purchaseRequest = purchaseRequestService.verifyIfExists(id);
-		return new ResponseEntity<>(purchaseRequest, HttpStatus.OK);
+		final String method = "[ PurchaseRequestController.findById ] - ";
+		LOGGER.debug(method + "BEGIN");
+
+		try {
+			LOGGER.debug(method + "Calling purchaseRequestService.verifyIfExists - ID: " + id);
+			final PurchaseRequest purchaseRequest = purchaseRequestService.verifyIfExists(id);
+
+			return new ResponseEntity<PurchaseRequest>(purchaseRequest, HttpStatus.OK);
+		} catch (ResourceNotFoundException e) {
+			final String errorMessage = VALIDATION_ERROR_RESPONSE + e.getMessage();
+			LOGGER.error(method + errorMessage, e);
+			return new ResponseEntity<>(new BadRequestResponseObject(errorMessage), HttpStatus.BAD_REQUEST);
+		} catch (Exception e) {
+			LOGGER.error(method + e.getMessage(), e);
+			return new ResponseEntity<>(new InternalServerErrorResponseObject(), HttpStatus.INTERNAL_SERVER_ERROR);
+		} finally {
+			LOGGER.debug(method + "END");
+		}
 	}
 
 	/**
