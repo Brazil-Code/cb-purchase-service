@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 
+import br.com.brazilcode.cb.libs.enumerator.LogActivityTypeEnum;
 import br.com.brazilcode.cb.libs.exception.ResourceNotFoundException;
 import br.com.brazilcode.cb.libs.model.PurchaseRequest;
 import br.com.brazilcode.cb.libs.model.api.response.BadRequestResponseObject;
@@ -30,6 +31,7 @@ import br.com.brazilcode.cb.libs.model.api.response.RestIntegrationErrorResponse
 import br.com.brazilcode.cb.purchase.dto.PurchaseRequestDTO;
 import br.com.brazilcode.cb.purchase.exception.PurchaseRequestValidationException;
 import br.com.brazilcode.cb.purchase.service.PurchaseRequestService;
+import br.com.brazilcode.cb.purchase.service.integration.administration.LogIntegrationService;
 
 /**
  * Classe responsável por expor as APIs para PurchaseRequest.
@@ -49,6 +51,9 @@ public class PurchaseRequestController implements Serializable {
 	@Autowired
 	private PurchaseRequestService purchaseRequestService;
 
+	@Autowired
+	private LogIntegrationService logIntegrationService;
+
 	/**
 	 * Método responsável por buscar uma {@link PurchaseRequest}.
 	 *
@@ -65,6 +70,9 @@ public class PurchaseRequestController implements Serializable {
 			LOGGER.debug(method + "Calling purchaseRequestService.verifyIfExists - ID: " + id);
 			final PurchaseRequest purchaseRequest = purchaseRequestService.verifyIfExists(id);
 
+			LOGGER.debug(method + "Registering activity log");
+			final String description = LogActivityTypeEnum.SEARCH.getDescription() + " for the Purchase Request: " + id;
+			this.logIntegrationService.createLog(description);
 			return new ResponseEntity<PurchaseRequest>(purchaseRequest, HttpStatus.OK);
 		} catch (ResourceNotFoundException e) {
 			final String errorMessage = VALIDATION_ERROR_RESPONSE + e.getMessage();
@@ -94,6 +102,9 @@ public class PurchaseRequestController implements Serializable {
 			LOGGER.debug(method + "Calling PurchaseRequestService.save... sending: " + purchaseRequestDTO.toString());
 			PurchaseRequest purchaseRequest = this.purchaseRequestService.save(requestContext.getHeader("Authorization"), purchaseRequestDTO);
 
+			LOGGER.debug(method + "Registering activity log");
+			final String description = LogActivityTypeEnum.CREATE.getDescription() + " a new Purchase Request: " + purchaseRequest.getId();
+			this.logIntegrationService.createLog(description);
 			return new ResponseEntity<>(new CreatedResponseObject(purchaseRequest.getId()), HttpStatus.CREATED);
 		} catch (PurchaseRequestValidationException e) {
 			final String errorMessage = VALIDATION_ERROR_RESPONSE + e.getMessage();

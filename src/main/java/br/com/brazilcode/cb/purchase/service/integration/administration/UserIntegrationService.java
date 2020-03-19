@@ -1,4 +1,4 @@
-package br.com.brazilcode.cb.purchase.service.integration;
+package br.com.brazilcode.cb.purchase.service.integration.administration;
 
 import java.io.Serializable;
 
@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import br.com.brazilcode.cb.libs.exception.ResourceNotFoundException;
 import br.com.brazilcode.cb.libs.model.User;
@@ -35,7 +36,7 @@ public class UserIntegrationService implements Serializable {
 	private Environment environment;
 
 	/**
-	 * Método responsável por fazer uma chamada via REST para o serviço de Users do módulo Administration.
+	 * Método responsável por fazer uma chamada via REST para o serviço de busca de Users do módulo Administration.
 	 *
 	 * @author Brazil Code - Gabriel Guarido
 	 * @param id
@@ -46,7 +47,6 @@ public class UserIntegrationService implements Serializable {
 	public User verifyIfExists(String authorization, Long id) {
 		final String method = "[ UserIntegrationService.verifyIfExist ] - ";
 		LOGGER.debug(method + "BEGIN");
-		LOGGER.debug(method + "Authorization: " + authorization);
 
 		RestTemplate restTemplate = new RestTemplate();
 		final String url = environment.getProperty("cb.administration.service.url") + "users/" + id;
@@ -60,6 +60,42 @@ public class UserIntegrationService implements Serializable {
 		try {
 			LOGGER.debug(method + "Calling the following URL: " + url);
 			response = restTemplate.exchange(url, HttpMethod.GET, request, User.class);
+
+			return (User) response.getBody();
+		} catch (Exception e) {
+			LOGGER.error(method + e.getMessage(), e);
+			throw e;
+		} finally {
+			LOGGER.debug(method + "END");
+		}
+	}
+
+	/**
+	 * Método responsável por buscar um usuário pelo username informado.
+	 *
+	 * @author Brazil Code - Gabriel Guarido
+	 * @param authorization
+	 * @param username
+	 * @return
+	 */
+	public User findByUsername(String authorization, String username) {
+		final String method = "[ UserIntegrationService.verifyIfExist ] - ";
+		LOGGER.debug(method + "BEGIN");
+
+		RestTemplate restTemplate = new RestTemplate();
+		final String url = environment.getProperty("cb.administration.service.url") + "users";
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.set("Authorization", authorization);
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url).queryParam("username", username);
+
+		HttpEntity<?> request = new HttpEntity<>(headers);
+		ResponseEntity<?> response;
+
+		try {
+			LOGGER.debug(method + "Calling the following URL: " + url);
+			response = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, request, User.class);
 
 			return (User) response.getBody();
 		} catch (Exception e) {
