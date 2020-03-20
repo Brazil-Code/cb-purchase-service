@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,16 +33,22 @@ import br.com.brazilcode.cb.purchase.dto.PurchaseRequestDTO;
 import br.com.brazilcode.cb.purchase.exception.PurchaseRequestValidationException;
 import br.com.brazilcode.cb.purchase.service.PurchaseRequestService;
 import br.com.brazilcode.cb.purchase.service.integration.administration.LogIntegrationService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * Classe responsável por expor as APIs para PurchaseRequest.
  *
  * @author Brazil Code - Gabriel Guarido
  * @since 6 de mar de 2020 12:32:49
- * @version 1.2
+ * @version 1.3
  */
 @RestController
 @RequestMapping("purchase-request")
+@Api(value = "REST API for Purchase Requests")
+@CrossOrigin(origins = "*")
 public class PurchaseRequestController implements Serializable {
 
 	private static final long serialVersionUID = 4295218504465659187L;
@@ -62,6 +69,12 @@ public class PurchaseRequestController implements Serializable {
 	 * @return
 	 */
 	@GetMapping(path = "{id}")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Return a Purchase Request"),
+			@ApiResponse(code = 400, message = "User not found for the given ID"),
+			@ApiResponse(code = 500, message = "Unexpected internal error")
+	})
+	@ApiOperation(value = "Search for a Purchase Request in database with the given ID")
 	public ResponseEntity<?> findById(@PathVariable("id") final Long id) {
 		final String method = "[ PurchaseRequestController.findById ] - ";
 		LOGGER.debug(method + "BEGIN");
@@ -73,6 +86,7 @@ public class PurchaseRequestController implements Serializable {
 			LOGGER.debug(method + "Registering activity log");
 			final String description = LogActivityTypeEnum.SEARCH.getDescription() + " for the Purchase Request: " + id;
 			this.logIntegrationService.createLog(description);
+
 			return new ResponseEntity<PurchaseRequest>(purchaseRequest, HttpStatus.OK);
 		} catch (ResourceNotFoundException e) {
 			final String errorMessage = VALIDATION_ERROR_RESPONSE + e.getMessage();
@@ -94,17 +108,27 @@ public class PurchaseRequestController implements Serializable {
 	 * @return
 	 */
 	@PostMapping
-	public ResponseEntity<?> save(HttpServletRequest requestContext, @Valid @RequestBody final PurchaseRequestDTO purchaseRequestDTO) {
+	@ApiResponses(value = {
+			@ApiResponse(code = 201, message = "Return the ID of the created Purchase Request"),
+			@ApiResponse(code = 400, message = "Validation Error / User not fond for the given ID"),
+			@ApiResponse(code = 500, message = "Unexpected internal error")
+	})
+	@ApiOperation(value = "Register a new Purchase Request")
+	public ResponseEntity<?> save(HttpServletRequest requestContext,
+			@Valid @RequestBody final PurchaseRequestDTO purchaseRequestDTO) {
 		final String method = "[ PurchaseRequestController.save ] - ";
 		LOGGER.debug(method + "BEGIN");
 
 		try {
 			LOGGER.debug(method + "Calling PurchaseRequestService.save... sending: " + purchaseRequestDTO.toString());
-			PurchaseRequest purchaseRequest = this.purchaseRequestService.save(requestContext.getHeader("Authorization"), purchaseRequestDTO);
+			PurchaseRequest purchaseRequest = this.purchaseRequestService.save(requestContext.getHeader("Authorization"),
+					purchaseRequestDTO);
 
 			LOGGER.debug(method + "Registering activity log");
-			final String description = LogActivityTypeEnum.CREATE.getDescription() + " a new Purchase Request: " + purchaseRequest.getId();
+			final String description = LogActivityTypeEnum.CREATE.getDescription() + " a new Purchase Request: "
+					+ purchaseRequest.getId();
 			this.logIntegrationService.createLog(description);
+
 			return new ResponseEntity<>(new CreatedResponseObject(purchaseRequest.getId()), HttpStatus.CREATED);
 		} catch (PurchaseRequestValidationException e) {
 			final String errorMessage = VALIDATION_ERROR_RESPONSE + e.getMessage();
