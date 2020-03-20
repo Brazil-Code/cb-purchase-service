@@ -3,13 +3,14 @@ package br.com.brazilcode.cb.purchase.service;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import br.com.brazilcode.cb.libs.enumerator.PurchaseRequestStatusEnum;
 import br.com.brazilcode.cb.libs.exception.ResourceNotFoundException;
@@ -19,13 +20,14 @@ import br.com.brazilcode.cb.libs.repository.PurchaseRequestRepository;
 import br.com.brazilcode.cb.purchase.dto.PriceQuotationDTO;
 import br.com.brazilcode.cb.purchase.dto.PurchaseRequestDTO;
 import br.com.brazilcode.cb.purchase.exception.PurchaseRequestValidationException;
+import br.com.brazilcode.cb.purchase.service.integration.administration.UserIntegrationService;
 
 /**
  * Classe responsável por aplicar as regras de negócio para {@link PurchaseRequest}.
  *
  * @author Brazil Code - Gabriel Guarido
  * @since 6 de mar de 2020 15:59:04
- * @version 1.0
+ * @version 1.2
  */
 @Service
 public class PurchaseRequestService implements Serializable {
@@ -38,7 +40,7 @@ public class PurchaseRequestService implements Serializable {
 	private PurchaseRequestRepository purchaseRequestDAO;
 
 	@Autowired
-	private UserService userService;
+	private UserIntegrationService userIntegrationService;
 
 	@Autowired
 	private PriceQuotationService priceQuotationService;
@@ -50,8 +52,9 @@ public class PurchaseRequestService implements Serializable {
 	 * @param {@link PurchaseRequestDTO}
 	 * @throws Exception
 	 */
-	public void save(PurchaseRequestDTO purchaseRequestDTO) throws Exception {
-		String method = "[ PurchaseRequestService.save ] - ";
+	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+	public PurchaseRequest save(String authorization, PurchaseRequestDTO purchaseRequestDTO) throws Exception {
+		final String method = "[ PurchaseRequestService.save ] - ";
 		LOGGER.debug(method + "BEGIN");
 
 		try {
@@ -62,19 +65,19 @@ public class PurchaseRequestService implements Serializable {
 			List<PriceQuotation> priceQuotations = this.priceQuotationService.save(purchaseRequestDTO);
 
 			LOGGER.debug(method + "Converting: " + purchaseRequestDTO.toString() + " to entity");
-			PurchaseRequest purchaseRequest = this.convertDtoToEntity(purchaseRequestDTO);
+			PurchaseRequest purchaseRequest = this.convertDtoToEntity(authorization, purchaseRequestDTO);
 
 			LOGGER.debug(method + "Adding all the price quotations in the PurchaseRequest's list");
 			purchaseRequest.getPriceQuotations().addAll(priceQuotations);
 
 			LOGGER.debug(method + "Saving: " + purchaseRequest.toString());
-			this.purchaseRequestDAO.save(purchaseRequest);
+			return this.purchaseRequestDAO.save(purchaseRequest);
 		} catch (Exception e) {
 			LOGGER.error(method + e.getMessage(), e);
 			throw e;
+		} finally {
+			LOGGER.debug(method + "END");
 		}
-
-		LOGGER.debug(method + "END");
 	}
 
 	/**
@@ -86,60 +89,50 @@ public class PurchaseRequestService implements Serializable {
 	 */
 	public void validateMandatoryFields(PurchaseRequestDTO purchaseRequestDTO)
 			throws PurchaseRequestValidationException, ResourceNotFoundException {
-		String method = "[ PurchaseRequestService.validateMandatoryFields ] - ";
+		final String method = "[ PurchaseRequestService.validateMandatoryFields ] - ";
 		LOGGER.debug(method + "BEGIN");
 
 		StringBuilder warnings = new StringBuilder();
 
 		if (purchaseRequestDTO != null) {
 			if (purchaseRequestDTO.getCreateUser() == null) {
-				warnings.append("\nField \'createUser\' cannot be null.");
-			} else {
-				try {
-					this.userService.verifyIfExists(purchaseRequestDTO.getCreateUser());
-				} catch (ResourceNotFoundException e) {
-					warnings.append("\n User: " + purchaseRequestDTO.getCreateUser() + " does not exist");
-					LOGGER.error(method + e.getMessage(), e);
-					throw e;
-				}
+				warnings.append(", Field \'createUser\' cannot be null");
 			}
 
-			if (StringUtils.isBlank(purchaseRequestDTO.getObservation())) {
-				warnings.append("\nField \'observation\' cannot be null.");
+			if (StringUtils.isBlank(purchaseRequestDTO.getPurchaseItem())) {
+				warnings.append(", Field \'purchaseItem\' cannot be null");
 			}
 
 			List<PriceQuotationDTO> priceQuotations = purchaseRequestDTO.getPriceQuotations();
 			if (priceQuotations.size() >= 3) {
 				priceQuotations.forEach((pq) -> {
 					if (StringUtils.isBlank(pq.getLink())) {
-						warnings.append("\nField \'link\' cannot be null.");
+						warnings.append(", Field \'link\' cannot be null");
 					}
 
 					if (pq.getUnitValue() <= 0) {
-						warnings.append("\nField \'unitValue\' cannot be negative.");
-					}
-
-					if (StringUtils.isBlank(pq.getPurchaseItem())) {
-						warnings.append("\nField \'purchaseItem\' cannot be null.");
+						warnings.append(", Field \'unitValue\' cannot be negative");
 					}
 
 					if (pq.getAmount() <= 0) {
-						warnings.append("\nField \'amount\' cannot be negative.");
+						warnings.append(", Field \'amount\' cannot be negative");
 					}
 
 					if (pq.getTotalValue() <= 0) {
-						warnings.append("\nField \'totalValue\' cannot be negative.");
+						warnings.append(", Field \'totalValue\' cannot be negative");
 					}
 				});
+			} else if (priceQuotations.size() > 5) {
+				warnings.append(", Purchase Requests can have 5 price quotations maximum");
 			} else {
-				warnings.append("\nPurchase Requests must have at least 3 price quotations");
+				warnings.append(", Purchase Requests must have at least 3 price quotations");
 			}
 		} else {
-			warnings.append("\nObject PurchaseRequest cannot be null");
+			warnings.append(", Object PurchaseRequest cannot be null");
 		}
 
 		if (warnings.length() > 1) {
-			LOGGER.error(method + "Validation warnings: " + warnings.toString());
+			LOGGER.error(method + "Validation warnings" + warnings.toString());
 			throw new PurchaseRequestValidationException(warnings.toString());
 		}
 
@@ -152,16 +145,17 @@ public class PurchaseRequestService implements Serializable {
 	 * @author Brazil Code - Gabriel Guarido
 	 * @param {@link PurchaseRequestDTO}
 	 * @return {@link PurchaseRequest} com os atributos preenchidos com os dados do objeto DTO
+	 * @throws Exception
 	 */
-	public PurchaseRequest convertDtoToEntity(PurchaseRequestDTO purchaseRequestDTO) {
-		String method = "[ PurchaseRequestService.convertDtoToEntity ] - ";
+	public PurchaseRequest convertDtoToEntity(String authorization, PurchaseRequestDTO purchaseRequestDTO) throws Exception {
+		final String method = "[ PurchaseRequestService.convertDtoToEntity ] - ";
 		LOGGER.debug(method + "BEGIN");
 
 		PurchaseRequest purchaseRequest = new PurchaseRequest();
 		try {
 			LOGGER.debug(method + "Loading PurchaseRequest");
-			purchaseRequest.setCreateUser(this.userService.verifyIfExists(purchaseRequestDTO.getCreateUser()));
-			purchaseRequest.setObservation(purchaseRequestDTO.getObservation());
+			purchaseRequest.setCreateUser(this.userIntegrationService.verifyIfExists(authorization, purchaseRequestDTO.getCreateUser()));
+			purchaseRequest.setPurchaseItem(purchaseRequestDTO.getPurchaseItem());
 			purchaseRequest.setStatus(PurchaseRequestStatusEnum.PENDING.getId());
 			purchaseRequest.setCreatedAt(new Timestamp(System.currentTimeMillis()));
 		} catch (Exception e) {
@@ -181,11 +175,10 @@ public class PurchaseRequestService implements Serializable {
 	 * @return {@link PurchaseRequest} caso o ID seja encontrado na base de dados
 	 */
 	public PurchaseRequest verifyIfExists(Long id) {
-		final Optional<PurchaseRequest> purchaseRequest = purchaseRequestDAO.findById(id);
-		if (!purchaseRequest.isPresent())
-			throw new ResourceNotFoundException("Purchase Request not found for the given ID: " + id);
+		final PurchaseRequest purchaseRequest = purchaseRequestDAO.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException(", Purchase Request not found for the given ID: " + id));
 
-		return purchaseRequest.get();
+		return purchaseRequest;
 	}
 
 }
