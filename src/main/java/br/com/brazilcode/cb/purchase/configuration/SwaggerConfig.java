@@ -48,8 +48,8 @@ public class SwaggerConfig {
 	@SuppressWarnings("rawtypes")
 	private ApiInfo metaInfo() {
 		return new ApiInfo(
-				"Purchase Request REST API", 
-				"REST API for the purchase module of the Clean Budget project", 
+				"Brazil Code - Purchase Service REST APIs", 
+				"Purchase module of the Clean Budget Project - By: Brazil Code", 
 				"1.0", 
 				"Terms of Service",
 				new Contact("Gabriel Guarido", "https://www.linkedin.com/in/gabriel-guarido-oliveira/", 

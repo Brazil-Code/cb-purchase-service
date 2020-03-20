@@ -71,7 +71,7 @@ public class PurchaseRequestController implements Serializable {
 	@GetMapping(path = "{id}")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Return a Purchase Request"),
-			@ApiResponse(code = 400, message = "User not found for the given ID"),
+			@ApiResponse(code = 400, message = "Purchase Request not found for the given ID"),
 			@ApiResponse(code = 500, message = "Unexpected internal error")
 	})
 	@ApiOperation(value = "Search for a Purchase Request in database with the given ID")
@@ -110,7 +110,7 @@ public class PurchaseRequestController implements Serializable {
 	@PostMapping
 	@ApiResponses(value = {
 			@ApiResponse(code = 201, message = "Return the ID of the created Purchase Request"),
-			@ApiResponse(code = 400, message = "Validation Error / User not fond for the given ID"),
+			@ApiResponse(code = 400, message = "Validation Error"),
 			@ApiResponse(code = 500, message = "Unexpected internal error")
 	})
 	@ApiOperation(value = "Register a new Purchase Request")

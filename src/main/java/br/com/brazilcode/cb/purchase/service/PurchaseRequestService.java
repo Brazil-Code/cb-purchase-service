@@ -175,10 +175,8 @@ public class PurchaseRequestService implements Serializable {
 	 * @return {@link PurchaseRequest} caso o ID seja encontrado na base de dados
 	 */
 	public PurchaseRequest verifyIfExists(Long id) {
-		final PurchaseRequest purchaseRequest = purchaseRequestDAO.findById(id)
+		return purchaseRequestDAO.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException(", Purchase Request not found for the given ID: " + id));
-
-		return purchaseRequest;
 	}
 
 }
