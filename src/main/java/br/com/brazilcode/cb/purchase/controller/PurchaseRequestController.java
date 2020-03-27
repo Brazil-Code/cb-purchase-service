@@ -29,6 +29,7 @@ import br.com.brazilcode.cb.libs.model.api.response.BadRequestResponseObject;
 import br.com.brazilcode.cb.libs.model.api.response.CreatedResponseObject;
 import br.com.brazilcode.cb.libs.model.api.response.InternalServerErrorResponseObject;
 import br.com.brazilcode.cb.libs.model.api.response.RestIntegrationErrorResponse;
+import br.com.brazilcode.cb.purchase.constants.SecurityConstants;
 import br.com.brazilcode.cb.purchase.dto.PurchaseRequestDTO;
 import br.com.brazilcode.cb.purchase.exception.PurchaseRequestValidationException;
 import br.com.brazilcode.cb.purchase.service.PurchaseRequestService;
@@ -69,11 +70,9 @@ public class PurchaseRequestController implements Serializable {
 	 * @return
 	 */
 	@GetMapping(path = "{id}")
-	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Return a Purchase Request"),
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "Return a Purchase Request"),
 			@ApiResponse(code = 400, message = "Purchase Request not found for the given ID"),
-			@ApiResponse(code = 500, message = "Unexpected internal error")
-	})
+			@ApiResponse(code = 500, message = "Unexpected internal error") })
 	@ApiOperation(value = "Search for a Purchase Request in database with the given ID")
 	public ResponseEntity<?> findById(@PathVariable("id") final Long id) {
 		final String method = "[ PurchaseRequestController.findById ] - ";
@@ -108,11 +107,9 @@ public class PurchaseRequestController implements Serializable {
 	 * @return
 	 */
 	@PostMapping
-	@ApiResponses(value = {
-			@ApiResponse(code = 201, message = "Return the ID of the created Purchase Request"),
+	@ApiResponses(value = { @ApiResponse(code = 201, message = "Return the ID of the created Purchase Request"),
 			@ApiResponse(code = 400, message = "Validation Error"),
-			@ApiResponse(code = 500, message = "Unexpected internal error")
-	})
+			@ApiResponse(code = 500, message = "Unexpected internal error") })
 	@ApiOperation(value = "Register a new Purchase Request")
 	public ResponseEntity<?> save(HttpServletRequest requestContext,
 			@Valid @RequestBody final PurchaseRequestDTO purchaseRequestDTO) {
@@ -121,8 +118,8 @@ public class PurchaseRequestController implements Serializable {
 
 		try {
 			LOGGER.debug(method + "Calling PurchaseRequestService.save... sending: " + purchaseRequestDTO.toString());
-			PurchaseRequest purchaseRequest = this.purchaseRequestService.save(requestContext.getHeader("Authorization"),
-					purchaseRequestDTO);
+			PurchaseRequest purchaseRequest = this.purchaseRequestService
+					.save(requestContext.getHeader(SecurityConstants.HEADER_STRING), purchaseRequestDTO);
 
 			LOGGER.debug(method + "Registering activity log");
 			final String description = LogActivityTypeEnum.CREATE.getDescription() + " a new Purchase Request: "

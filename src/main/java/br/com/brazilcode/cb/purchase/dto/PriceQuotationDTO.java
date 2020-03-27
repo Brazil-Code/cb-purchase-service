@@ -1,5 +1,7 @@
 package br.com.brazilcode.cb.purchase.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import io.swagger.annotations.ApiModelProperty;
 
 /**
@@ -10,6 +12,9 @@ import io.swagger.annotations.ApiModelProperty;
  * @version 1.1
  */
 public class PriceQuotationDTO {
+
+	@JsonIgnore
+	private Long id;
 
 	@ApiModelProperty(value = "Purchase link URL")
 	private String link;
