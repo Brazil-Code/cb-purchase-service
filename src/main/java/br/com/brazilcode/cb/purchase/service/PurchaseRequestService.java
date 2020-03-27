@@ -36,6 +36,16 @@ public class PurchaseRequestService implements Serializable {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(PurchaseRequestService.class);
 
+	/**
+	 * Todas as PurchaseRequest precisam ter no mínumo 3 PriceQuotation
+	 */
+	public static final int MINIMUM_PRICE_QUOTATION = 3;
+
+	/**
+	 * Todas as PurchaseRequest podem ter no máximo 5 PriceQuotation
+	 */
+	public static final int MAXIMUM_PRICE_QUOTATION = 5;
+
 	@Autowired
 	private PurchaseRequestRepository purchaseRequestDAO;
 
@@ -104,7 +114,7 @@ public class PurchaseRequestService implements Serializable {
 			}
 
 			List<PriceQuotationDTO> priceQuotations = purchaseRequestDTO.getPriceQuotations();
-			if (priceQuotations.size() >= 3) {
+			if (priceQuotations.size() >= MINIMUM_PRICE_QUOTATION) {
 				priceQuotations.forEach((pq) -> {
 					if (StringUtils.isBlank(pq.getLink())) {
 						warnings.append(", Field \'link\' cannot be null");
@@ -122,10 +132,12 @@ public class PurchaseRequestService implements Serializable {
 						warnings.append(", Field \'totalValue\' cannot be negative");
 					}
 				});
-			} else if (priceQuotations.size() > 5) {
-				warnings.append(", Purchase Requests can have 5 price quotations maximum");
 			} else {
 				warnings.append(", Purchase Requests must have at least 3 price quotations");
+			}
+
+			if (priceQuotations.size() > MAXIMUM_PRICE_QUOTATION) {
+				warnings.append(", Purchase Requests can have 5 price quotations maximum");
 			}
 		} else {
 			warnings.append(", Object PurchaseRequest cannot be null");
@@ -147,14 +159,16 @@ public class PurchaseRequestService implements Serializable {
 	 * @return {@link PurchaseRequest} com os atributos preenchidos com os dados do objeto DTO
 	 * @throws Exception
 	 */
-	public PurchaseRequest convertDtoToEntity(String authorization, PurchaseRequestDTO purchaseRequestDTO) throws Exception {
+	private PurchaseRequest convertDtoToEntity(String authorization, PurchaseRequestDTO purchaseRequestDTO) throws Exception {
 		final String method = "[ PurchaseRequestService.convertDtoToEntity ] - ";
 		LOGGER.debug(method + "BEGIN");
 
 		PurchaseRequest purchaseRequest = new PurchaseRequest();
+
 		try {
 			LOGGER.debug(method + "Loading PurchaseRequest");
-			purchaseRequest.setCreateUser(this.userIntegrationService.verifyIfExists(authorization, purchaseRequestDTO.getCreateUser()));
+			purchaseRequest
+					.setCreateUser(this.userIntegrationService.verifyIfExists(authorization, purchaseRequestDTO.getCreateUser()));
 			purchaseRequest.setPurchaseItem(purchaseRequestDTO.getPurchaseItem());
 			purchaseRequest.setStatus(PurchaseRequestStatusEnum.PENDING.getId());
 			purchaseRequest.setCreatedAt(new Timestamp(System.currentTimeMillis()));
