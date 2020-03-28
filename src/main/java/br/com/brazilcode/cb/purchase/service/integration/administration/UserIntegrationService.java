@@ -4,12 +4,14 @@ import java.io.Serializable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -18,6 +20,7 @@ import br.com.brazilcode.cb.libs.exception.ResourceNotFoundException;
 import br.com.brazilcode.cb.libs.model.User;
 import br.com.brazilcode.cb.purchase.constants.SecurityConstants;
 import br.com.brazilcode.cb.purchase.exception.integration.UserIntegrationServiceException;
+import br.com.brazilcode.cb.purchase.utils.HttpRequestUtils;
 
 /**
  * Classe responsável por fazer a integração via REST com o serviço de Users do módulo Administration.
@@ -36,6 +39,9 @@ public class UserIntegrationService implements Serializable {
 	@Value("${cb.administration.service.url}")
 	private String administrationServiceURL;
 
+	@Autowired
+	private HttpRequestUtils httpRequestUtils;
+
 	/**
 	 * Método responsável por fazer uma chamada via REST para o serviço de busca de Users do módulo Administration.
 	 *
@@ -46,13 +52,16 @@ public class UserIntegrationService implements Serializable {
 	 * @throws RestClientException - Caso ocorra algum erro durante a comunicação com a API
 	 * @throws ResourceNotFoundException - Caso o ID informado não exista na base de dados
 	 */
-	public User verifyIfExists(String authorization, Long id) throws UserIntegrationServiceException {
+	public User verifyIfExists(Long id) throws UserIntegrationServiceException {
 		final String method = "[ UserIntegrationService.verifyIfExist ] - ";
 		LOGGER.debug(method + "BEGIN");
 
 		RestTemplate restTemplate = new RestTemplate();
-		final String url = administrationServiceURL + "/users/" + id;
+		final String url = administrationServiceURL + "users/" + id;
 
+		String authorization = this.httpRequestUtils.getCurrentRequest().getHeader(SecurityConstants.HEADER_STRING);
+
+		LOGGER.debug(method + "Setting HEADERS to the request");
 		HttpHeaders headers = new HttpHeaders();
 		headers.set(SecurityConstants.HEADER_STRING, authorization);
 
@@ -65,9 +74,12 @@ public class UserIntegrationService implements Serializable {
 			response = restTemplate.exchange(url, HttpMethod.GET, request, User.class);
 
 			return (User) response.getBody();
-		} catch (Exception e) {
+		} catch (HttpClientErrorException.NotFound e) {
 			LOGGER.error(method + e.getMessage(), e);
 			throw new UserIntegrationServiceException(e.getMessage(), e);
+		} catch (Exception e) {
+			LOGGER.error(method + e.getMessage(), e);
+			throw e;
 		} finally {
 			LOGGER.debug(method + "END");
 		}
@@ -103,9 +115,12 @@ public class UserIntegrationService implements Serializable {
 			response = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, request, User.class);
 
 			return (User) response.getBody();
-		} catch (Exception e) {
+		} catch (HttpClientErrorException.NotFound e) {
 			LOGGER.error(method + e.getMessage(), e);
 			throw new UserIntegrationServiceException(e.getMessage(), e);
+		} catch (Exception e) {
+			LOGGER.error(method + e.getMessage(), e);
+			throw e;
 		} finally {
 			LOGGER.debug(method + "END");
 		}
