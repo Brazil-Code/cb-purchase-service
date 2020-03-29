@@ -61,7 +61,7 @@ public class LogIntegrationService implements Serializable {
 		String username = this.httpRequestUtils.getCurrentRequest().getUserPrincipal().getName();
 
 		LOGGER.debug(method + "Calling userIntegrationService.findByUsername");
-		User user = this.userIntegrationService.findByUsername(authorization, username);
+		User user = this.userIntegrationService.findByUsername(username);
 		LogDTO logDTO = new LogDTO(user.getId(), description, String.valueOf(Calendar.getInstance()));
 
 		LOGGER.debug(method + "Setting HTTP Headers");
