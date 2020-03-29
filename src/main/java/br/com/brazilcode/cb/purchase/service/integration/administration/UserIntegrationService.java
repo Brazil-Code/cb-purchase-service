@@ -94,12 +94,14 @@ public class UserIntegrationService implements Serializable {
 	 * @return
 	 * @throws UserIntegrationServiceException
 	 */
-	public User findByUsername(String authorization, String username) throws UserIntegrationServiceException {
+	public User findByUsername(String username) throws UserIntegrationServiceException {
 		final String method = "[ UserIntegrationService.verifyIfExist ] - ";
 		LOGGER.debug(method + "BEGIN");
 
 		RestTemplate restTemplate = new RestTemplate();
 		final String url = administrationServiceURL + "users";
+
+		String authorization = this.httpRequestUtils.getCurrentRequest().getHeader(SecurityConstants.HEADER_STRING);
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.set(SecurityConstants.HEADER_STRING, authorization);
