@@ -1,7 +1,6 @@
 package br.com.brazilcode.cb.purchase.service.integration.administration;
 
 import java.io.Serializable;
-import java.util.Calendar;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -50,6 +50,7 @@ public class LogIntegrationService implements Serializable {
 	 * @throws LogIntegrationServiceException
 	 * @throws UserIntegrationServiceException
 	 */
+	@Async
 	public void createLog(String description) throws LogIntegrationServiceException, UserIntegrationServiceException {
 		final String method = "[ LogIntegrationService.createLog ] - ";
 		LOGGER.debug(method + "BEGIN");
@@ -62,7 +63,7 @@ public class LogIntegrationService implements Serializable {
 
 		LOGGER.debug(method + "Calling userIntegrationService.findByUsername");
 		User user = this.userIntegrationService.findByUsername(username);
-		LogDTO logDTO = new LogDTO(user.getId(), description, String.valueOf(Calendar.getInstance()));
+		LogDTO logDTO = new LogDTO(user.getId(), description);
 
 		LOGGER.debug(method + "Setting HTTP Headers");
 		HttpHeaders headers = new HttpHeaders();
