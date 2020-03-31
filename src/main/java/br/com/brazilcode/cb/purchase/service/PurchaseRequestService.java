@@ -39,9 +39,7 @@ public class PurchaseRequestService implements Serializable {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(PurchaseRequestService.class);
 
-	public static final int MINIMUM_ALLOWED_PRICE_QUOTATION = 3;
-
-	public static final int MAXIMUM_ALLOWED_PRICE_QUOTATION = 5;
+	public static final int MINIMUM_PRICE_QUOTATION_ALLOWED = 3;
 
 	@Autowired
 	private PurchaseRequestRepository purchaseRequestDAO;
@@ -111,7 +109,7 @@ public class PurchaseRequestService implements Serializable {
 			}
 
 			List<PriceQuotationDTO> priceQuotations = purchaseRequestDTO.getPriceQuotations();
-			if (priceQuotations.size() >= MINIMUM_ALLOWED_PRICE_QUOTATION) {
+			if (priceQuotations.size() >= MINIMUM_PRICE_QUOTATION_ALLOWED) {
 				priceQuotations.forEach((pq) -> {
 					if (StringUtils.isBlank(pq.getLink())) {
 						warnings.append(", Field \'link\' cannot be null");
@@ -131,10 +129,6 @@ public class PurchaseRequestService implements Serializable {
 				});
 			} else {
 				warnings.append(", Purchase Requests must have at least 3 price quotations");
-			}
-
-			if (priceQuotations.size() > MAXIMUM_ALLOWED_PRICE_QUOTATION) {
-				warnings.append(", Purchase Requests can have 5 price quotations maximum");
 			}
 		} else {
 			warnings.append(", Object PurchaseRequest cannot be null");
