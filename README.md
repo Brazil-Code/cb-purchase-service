@@ -12,4 +12,4 @@ Purchase module of the Clean Budget product
 ## Release Notes
 | Starting Date | Last Deploy | Version |
 |---|---|---|
-| Mar 5 | Mar 31 2020 | 1.4.3 |
+| Mar 5 2020 | Mar 31 2020 | 1.4.3 |
