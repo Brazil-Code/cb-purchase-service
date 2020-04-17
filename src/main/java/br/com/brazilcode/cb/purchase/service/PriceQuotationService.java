@@ -8,11 +8,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import br.com.brazilcode.cb.libs.model.PriceQuotation;
 import br.com.brazilcode.cb.libs.repository.PriceQuotationRepository;
 import br.com.brazilcode.cb.purchase.dto.PriceQuotationDTO;
 import br.com.brazilcode.cb.purchase.dto.PurchaseRequestDTO;
+import br.com.brazilcode.cb.purchase.exception.PriceQuotationServiceException;
+import br.com.brazilcode.cb.purchase.utils.MapperUtils;
 
 /**
  * Classe responsável por aplicar as regras de negócio para {@link PriceQuotation}.
@@ -31,6 +35,9 @@ public class PriceQuotationService implements Serializable {
 	@Autowired
 	private PriceQuotationRepository priceQuotationDAO;
 
+	@Autowired
+	private MapperUtils mapperUtils;
+
 	/**
 	 * Método responsável por salvar um {@link PriceQuotation} no banco de dados e retornar a lista de todas as
 	 * {@link PriceQuotation}.
@@ -38,18 +45,20 @@ public class PriceQuotationService implements Serializable {
 	 * @author Brazil Code - Gabriel Guarido
 	 * @param {@link PriceQuotation}
 	 * @return lista com todas as {@link PriceQuotation}
-	 * @throws Exception
+	 * @throws PriceQuotationServiceException
 	 */
-	public List<PriceQuotation> save(PurchaseRequestDTO purchaseRequestDTO) throws Exception {
+	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+	public List<PriceQuotation> save(PurchaseRequestDTO purchaseRequestDTO) throws PriceQuotationServiceException {
 		final String method = "[ PriceQuotationService.save ] - ";
 		LOGGER.debug(method + "BEGIN");
 
 		List<PriceQuotationDTO> priceQuotationsDTO = purchaseRequestDTO.getPriceQuotations();
 		List<PriceQuotation> priceQuotations = new ArrayList<PriceQuotation>();
+
 		try {
 			priceQuotationsDTO.forEach((pq) -> {
 				LOGGER.debug(method + "Converting: " + pq.toString() + " to entity");
-				PriceQuotation priceQuotation = this.convertDtoToEntity(pq);
+				PriceQuotation priceQuotation = this.mapperUtils.parse(pq, PriceQuotation.class);
 
 				LOGGER.debug(method + "Saving: " + priceQuotation.toString());
 				this.priceQuotationDAO.save(priceQuotation);
@@ -58,39 +67,11 @@ public class PriceQuotationService implements Serializable {
 			});
 		} catch (Exception e) {
 			LOGGER.error(method + e.getMessage(), e);
-			throw e;
+			throw new PriceQuotationServiceException(e.getMessage(), e);
 		}
 
 		LOGGER.debug(method + "END");
 		return priceQuotations;
-	}
-
-	/**
-	 * Método responsável por converter um objeto {@link PriceQuotationDTO} para entidade PriceQuotation.
-	 *
-	 * @author Brazil Code - Gabriel Guarido
-	 * @param {@link PriceQuotationDTO}
-	 * @return
-	 */
-	public PriceQuotation convertDtoToEntity(PriceQuotationDTO priceQuotationDTO) {
-		final String method = "[ PriceQuotationService.convertDtoToEntity ] - ";
-		LOGGER.debug(method + "BEGIN");
-
-		PriceQuotation priceQuotation = new PriceQuotation();
-		try {
-			LOGGER.debug(method + "Loading PriceQuotation");
-			priceQuotation.setLink(priceQuotationDTO.getLink());
-			priceQuotation.setUnitValue(priceQuotationDTO.getUnitValue());
-			priceQuotation.setObservation(priceQuotationDTO.getObservation());
-			priceQuotation.setAmount(priceQuotationDTO.getAmount());
-			priceQuotation.setTotalValue(priceQuotationDTO.getTotalValue());
-		} catch (Exception e) {
-			LOGGER.error(method + e.getMessage(), e);
-			throw e;
-		}
-
-		LOGGER.debug(method + "END... Returning: " + priceQuotation.toString());
-		return priceQuotation;
 	}
 
 }

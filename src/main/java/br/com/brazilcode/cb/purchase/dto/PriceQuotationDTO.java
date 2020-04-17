@@ -1,5 +1,9 @@
 package br.com.brazilcode.cb.purchase.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * Classe de Data Transfer Object para PriceQuotation.
  *
@@ -9,10 +13,22 @@ package br.com.brazilcode.cb.purchase.dto;
  */
 public class PriceQuotationDTO {
 
+	@JsonIgnore
+	private Long id;
+
+	@ApiModelProperty(value = "Purchase link URL")
 	private String link;
+
+	@ApiModelProperty(value = "Product's unit value")
 	private double unitValue;
+
+	@ApiModelProperty(value = "Quotation's observation")
 	private String observation;
+
+	@ApiModelProperty(value = "Product's amount")
 	private int amount;
+
+	@ApiModelProperty(value = "Product's total value = unit value * amount")
 	private double totalValue;
 
 	public String getLink() {

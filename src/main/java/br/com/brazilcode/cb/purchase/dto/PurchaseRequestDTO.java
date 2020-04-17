@@ -3,6 +3,8 @@ package br.com.brazilcode.cb.purchase.dto;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * Classe de Data Transfer Object para {@link PurchaseRequest}.
  *
@@ -12,8 +14,13 @@ import java.util.List;
  */
 public class PurchaseRequestDTO {
 
+	@ApiModelProperty(value = "ID creation user")
 	private Long createUser;
+
+	@ApiModelProperty(value = "Product's description")
 	private String purchaseItem;
+
+	@ApiModelProperty(value = "List of price quotations. Must have 3 to 5 quotations")
 	private List<PriceQuotationDTO> priceQuotations = new ArrayList<>();
 
 	public Long getCreateUser() {

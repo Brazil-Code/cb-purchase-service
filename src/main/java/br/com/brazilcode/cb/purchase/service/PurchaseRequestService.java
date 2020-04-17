@@ -3,13 +3,16 @@ package br.com.brazilcode.cb.purchase.service;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import br.com.brazilcode.cb.libs.enumerator.PurchaseRequestStatusEnum;
 import br.com.brazilcode.cb.libs.exception.ResourceNotFoundException;
@@ -19,13 +22,15 @@ import br.com.brazilcode.cb.libs.repository.PurchaseRequestRepository;
 import br.com.brazilcode.cb.purchase.dto.PriceQuotationDTO;
 import br.com.brazilcode.cb.purchase.dto.PurchaseRequestDTO;
 import br.com.brazilcode.cb.purchase.exception.PurchaseRequestValidationException;
+import br.com.brazilcode.cb.purchase.exception.integration.UserIntegrationServiceException;
+import br.com.brazilcode.cb.purchase.service.integration.administration.UserIntegrationService;
 
 /**
  * Classe responsável por aplicar as regras de negócio para {@link PurchaseRequest}.
  *
  * @author Brazil Code - Gabriel Guarido
  * @since 6 de mar de 2020 15:59:04
- * @version 1.0
+ * @version 1.2
  */
 @Service
 public class PurchaseRequestService implements Serializable {
@@ -34,11 +39,13 @@ public class PurchaseRequestService implements Serializable {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(PurchaseRequestService.class);
 
+	public static final int MINIMUM_PRICE_QUOTATION_ALLOWED = 3;
+
 	@Autowired
 	private PurchaseRequestRepository purchaseRequestDAO;
 
 	@Autowired
-	private UserService userService;
+	private UserIntegrationService userIntegrationService;
 
 	@Autowired
 	private PriceQuotationService priceQuotationService;
@@ -50,6 +57,7 @@ public class PurchaseRequestService implements Serializable {
 	 * @param {@link PurchaseRequestDTO}
 	 * @throws Exception
 	 */
+	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
 	public PurchaseRequest save(PurchaseRequestDTO purchaseRequestDTO) throws Exception {
 		final String method = "[ PurchaseRequestService.save ] - ";
 		LOGGER.debug(method + "BEGIN");
@@ -101,7 +109,7 @@ public class PurchaseRequestService implements Serializable {
 			}
 
 			List<PriceQuotationDTO> priceQuotations = purchaseRequestDTO.getPriceQuotations();
-			if (priceQuotations.size() >= 3) {
+			if (priceQuotations.size() >= MINIMUM_PRICE_QUOTATION_ALLOWED) {
 				priceQuotations.forEach((pq) -> {
 					if (StringUtils.isBlank(pq.getLink())) {
 						warnings.append(", Field \'link\' cannot be null");
@@ -119,8 +127,6 @@ public class PurchaseRequestService implements Serializable {
 						warnings.append(", Field \'totalValue\' cannot be negative");
 					}
 				});
-			} else if (priceQuotations.size() > 5) {
-				warnings.append(", Purchase Requests can have 5 price quotations maximum");
 			} else {
 				warnings.append(", Purchase Requests must have at least 3 price quotations");
 			}
@@ -142,15 +148,17 @@ public class PurchaseRequestService implements Serializable {
 	 * @author Brazil Code - Gabriel Guarido
 	 * @param {@link PurchaseRequestDTO}
 	 * @return {@link PurchaseRequest} com os atributos preenchidos com os dados do objeto DTO
+	 * @throws Exception
 	 */
-	public PurchaseRequest convertDtoToEntity(PurchaseRequestDTO purchaseRequestDTO) {
+	private PurchaseRequest convertDtoToEntity(PurchaseRequestDTO purchaseRequestDTO) throws Exception {
 		final String method = "[ PurchaseRequestService.convertDtoToEntity ] - ";
 		LOGGER.debug(method + "BEGIN");
 
 		PurchaseRequest purchaseRequest = new PurchaseRequest();
+
 		try {
 			LOGGER.debug(method + "Loading PurchaseRequest");
-			purchaseRequest.setCreateUser(this.userService.verifyIfExists(purchaseRequestDTO.getCreateUser()));
+			purchaseRequest.setCreateUser(this.userIntegrationService.verifyIfExists(purchaseRequestDTO.getCreateUser()));
 			purchaseRequest.setPurchaseItem(purchaseRequestDTO.getPurchaseItem());
 			purchaseRequest.setStatus(PurchaseRequestStatusEnum.PENDING.getId());
 			purchaseRequest.setCreatedAt(new Timestamp(System.currentTimeMillis()));
@@ -171,11 +179,36 @@ public class PurchaseRequestService implements Serializable {
 	 * @return {@link PurchaseRequest} caso o ID seja encontrado na base de dados
 	 */
 	public PurchaseRequest verifyIfExists(Long id) {
-		final Optional<PurchaseRequest> purchaseRequest = purchaseRequestDAO.findById(id);
-		if (!purchaseRequest.isPresent())
-			throw new ResourceNotFoundException(", Purchase Request not found for the given ID: " + id);
+		return purchaseRequestDAO.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException(", Purchase Request not found for the given ID: " + id));
+	}
 
-		return purchaseRequest.get();
+	/**
+	 * Método responsável por buscar uma lista paginada com todas as {@link PurchaseRequest} criadas pelo Usuário informado.
+	 *
+	 * @author Brazil Code - Gabriel Guarido
+	 * @param userId
+	 * @return
+	 * @throws Exception
+	 */
+	public Page<PurchaseRequest> findPaginatedByUserId(Integer userId, Pageable pageable) throws Exception {
+		final String method = "[ PurchaseRequestService.findPaginated ] - ";
+		LOGGER.debug(method + "BEGIN");
+
+		try {
+			LOGGER.debug("Calling userIntegrationService.verifyIfExists");
+			this.userIntegrationService.verifyIfExists(userId.longValue());
+
+			return this.purchaseRequestDAO.findByCreateUserId(userId.longValue(), pageable);
+		} catch (UserIntegrationServiceException e) {
+			LOGGER.error(method + e.getMessage(), e);
+			throw e;
+		} catch (Exception e) {
+			LOGGER.error(method + e.getMessage(), e);
+			throw e;
+		} finally {
+			LOGGER.debug(method + "END");
+		}
 	}
 
 }

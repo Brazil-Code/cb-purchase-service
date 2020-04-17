@@ -9,7 +9,7 @@ import br.com.brazilcode.cb.libs.model.PurchaseRequest;
  * @since 8 de mar de 2020 16:33:03
  * @version 1.0
  */
-public class PurchaseRequestValidationException extends Exception {
+public class PurchaseRequestValidationException extends PurchaseRequestServiceException {
 
 	private static final long serialVersionUID = 2719472012150424145L;
 
