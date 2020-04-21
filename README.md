@@ -1,15 +1,16 @@
-# cb-purchase-service
-Purchase module of the Clean Budget product
+<h2 align="center">
+  CB-PURCHASE-SERVICE - Purchase module of the Clean Budget product
+</h2>
 
-## Technologies
+## :computer: Technologies
 * Java 8
 * Spring Framework (Boot, Security, ect)
 * RESTful APIs
 
-## Developers
+## :alien: Developers
 1. Gabriel Guarido
 
-## Release Notes
-| Starting Date | Last Deploy | Version |
+## :calendar: Release Notes
+| :rocket: Kick Off | Last Deploy | Version |
 |---|---|---|
 | Mar 5 2020 | Mar 31 2020 | 1.4.3 |
